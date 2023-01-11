@@ -44,7 +44,7 @@ def prcp():
     # Begin Session
     session = Session(engine)
     # determine date 12 months from the most recent datapoint
-    twelve_months = dt.date(2017,8,23) - dt.timedelta(weeks=52)
+    twelve_months = dt.date(2017,8,2) - dt.timedelta(weeks=52)
 
     # Perform a query to retrieve the date and precipitation scores
     data_precp = session.query(measurement.date,measurement.prcp).\
@@ -115,9 +115,22 @@ def start_date(start):
 
     search_date = (dt.datetime(start))
     
-    output = (session.query(func.min(measurement.tobs), func.max(measurement.tobs), func.avg(measurement.tobs)).\
-                filter(measurement.date == str(search_date)).all())
-    return jsonify(output)
+    output = session.query(measurement.date, func.min(measurement.tobs), func.max(measurement.tobs), func.avg(measurement.tobs)).\
+                filter(measurement.date == start).all()
+
+    start_list = []
+    for w, x, y, z in output:
+            start_dict = {}
+            start_dict["Date"] = w
+            start_dict["Min"] = x
+            start_dict["Max"] = y
+            start_dict["Average"] = z
+            start_list.append(start_dict)
+
+    return jsonify(start_list)
+
+    
+
 
 # 6. /api/v1.0/<start>/<end>
 # For a specified start date and end date, calculate TMIN, TAVG, and TMAX for the dates from the start date to the end date, inclusive.
