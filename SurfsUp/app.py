@@ -108,16 +108,14 @@ def tobs():
 # For a specified start, calculate TMIN, TAVG, and TMAX for all the dates greater than or equal to the start date.
 
 
-@app.route("/api/v1.0/<start>")
+@app.route("/api/v1.0/<start>") 
 def start_date(start):
     # Begin Session
     session = Session(engine)
-
-    search_date = (dt.datetime(start))
-    
+    # Query the db for entries equal to the input start date
     output = session.query(measurement.date, func.min(measurement.tobs), func.max(measurement.tobs), func.avg(measurement.tobs)).\
-                filter(measurement.date == start).all()
-
+        filter(measurement.date >= start).all()
+    # Loop through results and input into a dictionary.Add to list
     start_list = []
     for w, x, y, z in output:
             start_dict = {}
@@ -126,7 +124,7 @@ def start_date(start):
             start_dict["Max"] = y
             start_dict["Average"] = z
             start_list.append(start_dict)
-
+    # Jasonify list results
     return jsonify(start_list)
 
     
@@ -135,7 +133,26 @@ def start_date(start):
 # 6. /api/v1.0/<start>/<end>
 # For a specified start date and end date, calculate TMIN, TAVG, and TMAX for the dates from the start date to the end date, inclusive.
 
-
+@app.route("/api/v1.0/<start>/<end>") 
+def date_range(start,end):
+    # Begin Session
+    session = Session(engine)
+    # Query the db for entries equal to the input start date
+    range = session.query(measurement.date, func.min(measurement.tobs), func.max(measurement.tobs), func.avg(measurement.tobs)).\
+        filter(measurement.date >= start).\
+        filter(measurement.date >= end).all()
+ 
+    # Loop through results and input into a dictionary.Add to list
+    range_list = []
+    for w, x, y, z in range:
+            range_dict = {}
+            range_dict["Date"] = w
+            range_dict["Min"] = x
+            range_dict["Max"] = y
+            range_dict["Average"] = z
+            range_list.append(range_dict)
+    # Jasonify list results
+    return jsonify(range_list)
 
 
 if __name__ == "__main__":
